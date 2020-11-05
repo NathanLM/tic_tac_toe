@@ -1,3 +1,3 @@
-# Typescript Script Tic-Tac-Toe
+# Tic-Tac-Toe
 
-A tic-tac-toe coded in Typescript
+A tic-tac-toe game coded in Typescript
