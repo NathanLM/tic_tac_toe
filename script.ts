@@ -23,11 +23,11 @@ class Grid {
     
     
     constructor() {
-        this.RestartGame();
+        this.restartGame();
         document.querySelectorAll(".cell").forEach(cell => {
-                cell.addEventListener("click", (clickedCellEvent) => {this.CellClicked(clickedCellEvent) })
+                cell.addEventListener("click", (clickedCellEvent) => {this.cellClicked(clickedCellEvent) })
         });
-        document.querySelector(".restartButton")!.addEventListener("click", (clickedButtonEvent) =>{ this.RestartGame() });
+        document.querySelector(".restartButton")!.addEventListener("click", (clickedButtonEvent) =>{ this.restartGame() });
     }
     /** Game Messages **/
 
@@ -45,11 +45,11 @@ class Grid {
     
     /** Restart Game **/
 
-    RestartGame() {
+    restartGame() {
         this.gameActive = true;
         this.currentPlayer = "X";
         for(let index = 0; index < 9 ; index++){
-            this.gameState[index] = this.blankCell
+            this.gameState[index] = this.blankCell;
         }
         this.statusDisplay = document.querySelector('.status')!;
         this.statusDisplay.innerHTML = this.currentPlayerTurn();
@@ -58,77 +58,73 @@ class Grid {
 
     /** Click on a cell **/
 
-    CellClicked(clickedCellEvent: Event) {
+    cellClicked(clickedCellEvent: Event) {
         const clickedCellDOM = clickedCellEvent.currentTarget as Element;
         const clickedCellIndex = parseInt(clickedCellDOM.getAttribute("cellIndex")!);
         
-        console.log(this.gameState);
-
-        var clickedCell = this.gameState[clickedCellIndex];
-
-        if (!this.IsCellEmpty(clickedCell) || !this.gameActive) {
+        if (!this.isCellEmpty(this.gameState[clickedCellIndex]) || !this.gameActive) {
             return;
         }
 
-        this.CellPlayed(clickedCellDOM, clickedCellIndex);
-        this.ResultValidation();
+        this.cellPlayed(clickedCellDOM, clickedCellIndex);
+        this.resultValidation();
     }
 
-    CellPlayed(clickedCell: Element, clickedCellIndex: number) {
+    cellPlayed(clickedCell: Element, clickedCellIndex: number) {
         this.gameState[clickedCellIndex] = this.currentPlayer;
         clickedCell.innerHTML = this.currentPlayer;
     }
 
-    ChangeCurrentPlayer() {
+    changeCurrentPlayer() {
         this.currentPlayer = this.currentPlayer === "X" ? "O" : "X";
         this.statusDisplay!.innerHTML = this.currentPlayerTurn();
     }
 
-    ResultValidation() {
-        if (this.IsThereAWinner()) {
-            this.EndTheGame(this.winningMessage());
+    resultValidation() {
+        if (this.isThereAWinner()) {
+            this.endTheGame(this.winningMessage());
             return;
         }
 
-        if (this.IsRoundADraw()) {
-            this.EndTheGame(this.drawMessage());
+        if (this.isRoundADraw()) {
+            this.endTheGame(this.drawMessage());
             return;
         }
 
-        this.ChangeCurrentPlayer();
+        this.changeCurrentPlayer();
     }
 
-    IsRoundADraw = () => !this.gameState.includes(this.blankCell);
+    isRoundADraw = () => !this.gameState.includes(this.blankCell);
 
-    EndTheGame(message: string){
+    endTheGame(message: string){
         this.statusDisplay!.innerHTML = message;
         this.gameActive = false;
     }
 
-    IsThereAWinner(){
+    isThereAWinner(){
         for (let index = 0; index < 8; index++) {
             const winCondition = this.winningConditions[index];
             let firstCell = this.gameState[winCondition[0]];
             let secondCell = this.gameState[winCondition[1]];
             let thirdCell = this.gameState[winCondition[2]];
 
-            if (this.IsCellEmpty(firstCell) || this.IsCellEmpty(secondCell) || this.IsCellEmpty(thirdCell)) {
+            if (this.isCellEmpty(firstCell) || this.isCellEmpty(secondCell) || this.isCellEmpty(thirdCell)) {
                 continue;
             }
-            if (this.AreCellsEqual(firstCell, secondCell) && this.AreCellsEqual(secondCell, thirdCell)) {
+            if (this.areCellsEqual(firstCell, secondCell) && this.areCellsEqual(secondCell, thirdCell)) {
                 return true;
             }
         }
         return false;
     }
 
-    IsCellEmpty(cell: string){
+    isCellEmpty(cell: string){
         return cell === this.blankCell;
     }
 
-    AreCellsEqual(cell1: string, cell2: string){
+    areCellsEqual(cell1: string, cell2: string){
         return cell1 === cell2;
     }
 }
 
-var grid = new Grid();
+let grid = new Grid();
