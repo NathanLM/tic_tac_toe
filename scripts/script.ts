@@ -1,13 +1,26 @@
-import {app} from './app'
+interface Symbol{
+    readonly symbol:string;
+}
 
-class Grid {
+class PlayerOne implements Symbol{
+    symbol:string  = "X";
+}
+
+class PlayerTwo implements Symbol{
+    symbol:string  = "O";
+}
+
+class EmptySymbol implements Symbol{
+    symbol:string  = "";
+}
+ 
+export default class Grid {
     statusDisplay: Element = document.querySelector('.status')!;
     gameActive:boolean = false;
-    currentPlayer: string = "";
-    gameState: string[] = [""];
+    currentPlayer: Symbol = new PlayerOne();
+    gameState: Symbol[] = [];
     
     /** Variables  **/
-    readonly  blankCell = "";
     readonly  winningConditions = [
         [0, 1, 2],
         [0, 3, 6],
@@ -25,7 +38,7 @@ class Grid {
     constructor() {
         this.restartGame();
         document.querySelectorAll(".cell").forEach(cell => {
-                cell.addEventListener("click", (clickedCellEvent) => {this.cellClicked(clickedCellEvent) })
+            cell.addEventListener("click", (clickedCellEvent) => {this.cellClicked(clickedCellEvent) })
         });
         document.querySelector(".restartButton")!.addEventListener("click", (clickedButtonEvent) =>{ this.restartGame() });
     }
@@ -36,20 +49,24 @@ class Grid {
     };
 
     winningMessage(): string{
-        return `${this.currentPlayer} won!`;
+        if(this.isItPlayerOnesTurn()){
+            return "Player One won!";
+        }else{
+            return "Player Two won!";
+        }
     };
 
     currentPlayerTurn(): string{
-        return `Current Player : ${this.currentPlayer}`;
+        return `Current Player : ${this.currentPlayer.symbol}`;
     };
     
     /** Restart Game **/
 
     restartGame() {
         this.gameActive = true;
-        this.currentPlayer = "X";
+        this.currentPlayer = new PlayerOne();
         for(let index = 0; index < 9 ; index++){
-            this.gameState[index] = this.blankCell;
+            this.gameState[index] = new EmptySymbol();
         }
         this.statusDisplay = document.querySelector('.status')!;
         this.statusDisplay.innerHTML = this.currentPlayerTurn();
@@ -61,7 +78,7 @@ class Grid {
     cellClicked(clickedCellEvent: Event) {
         const clickedCellDOM = clickedCellEvent.currentTarget as Element;
         const clickedCellIndex = parseInt(clickedCellDOM.getAttribute("cellIndex")!);
-        
+
         if (!this.isCellEmpty(this.gameState[clickedCellIndex]) || !this.gameActive) {
             return;
         }
@@ -70,38 +87,53 @@ class Grid {
         this.resultValidation();
     }
 
-    cellPlayed(clickedCell: Element, clickedCellIndex: number) {
+    private cellPlayed(clickedCell: Element, clickedCellIndex: number) {
         this.gameState[clickedCellIndex] = this.currentPlayer;
-        clickedCell.innerHTML = this.currentPlayer;
+        clickedCell.innerHTML = this.currentPlayer.symbol;
     }
 
-    changeCurrentPlayer() {
-        this.currentPlayer = this.currentPlayer === "X" ? "O" : "X";
+    private changeCurrentPlayer() {
+        this.currentPlayer = this.isItPlayerOnesTurn() ? new PlayerTwo() : new PlayerOne();
         this.statusDisplay!.innerHTML = this.currentPlayerTurn();
     }
 
-    resultValidation() {
+    private isItPlayerOnesTurn(): boolean{
+        return this.currentPlayer.symbol === new PlayerOne().symbol
+    }
+
+    private resultValidation() {
         if (this.isThereAWinner()) {
             this.endTheGame(this.winningMessage());
             return;
         }
 
         if (this.isRoundADraw()) {
-            this.endTheGame(this.drawMessage());
+            this.endTheGame(this.drawMessage());    
             return;
         }
 
         this.changeCurrentPlayer();
     }
 
-    isRoundADraw = () => !this.gameState.includes(this.blankCell);
-
-    endTheGame(message: string){
+    private endTheGame(message: string){
         this.statusDisplay!.innerHTML = message;
         this.gameActive = false;
     }
 
-    isThereAWinner(){
+    /** Grid status analysis methods **/
+
+    private isRoundADraw():boolean {
+        let result = true;
+        this.gameState.forEach(cell => {
+            if(this.isCellEmpty(cell)){
+                result = false;
+                return;
+            }
+        })
+        return result;
+    };
+
+    private isThereAWinner(){
         for (let index = 0; index < 8; index++) {
             const winCondition = this.winningConditions[index];
             let firstCell = this.gameState[winCondition[0]];
@@ -118,13 +150,17 @@ class Grid {
         return false;
     }
 
-    isCellEmpty(cell: string){
-        return cell === this.blankCell;
+    /** Cell comparisons methods **/
+
+    private isCellEmpty(cell: Symbol){
+        return this.areCellsEqual(cell, new EmptySymbol());
     }
 
-    areCellsEqual(cell1: string, cell2: string){
-        return cell1 === cell2;
+    private areCellsEqual(cell1: Symbol, cell2: Symbol){
+        return cell1.symbol === cell2.symbol;
     }
 }
 
 let grid = new Grid();
+
+export {Grid};
